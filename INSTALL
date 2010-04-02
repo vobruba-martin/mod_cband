@@ -1,0 +1,214 @@
+
+$Id: INSTALL,v 1.6 2006/01/28 19:36:33 dembol Exp $
+
+		 mod_cband - A per-user, per-virtualhost and per-destination bandwidth
+			    limiter for the Apache HTTP Server Version 2
+
+
+
+INSTALLATION
+============
+
+Prerequisites
+
+* Apache 2.0.54 - http://www.apache.org/
+Other versions may work but have not been tested
+
+
+Building
+
+If you have got the apxs2 (APache eXtenSion tool) tool installed, write the following commands to build module:
+
+$ wget http://cband.linux.pl/download/mod-cband-0.9.7.5.tgz
+$ tar xzvf mod-cband-0.9.7.5.tgz
+$ cd mod-cband-0.9.7.5
+$ ./configure
+$ make
+$ make install
+
+Otherwise, you must rebuild your Apache from source with something like this:
+
+configure --add-module=../mod-cband/mod_cband.c --enable-shared=cband --enable-module=so
+
+
+CONFIGURATION
+=============
+
+Configuration is very simple, you must write only several
+lines. First, you must add following command to the main config file
+to load mod_cband module. The path to mod_cband.so depends on your
+apache installation.
+
+LoadModule cband_module		modules/mod_cband.so
+
+--------------------------------------------------------
+
+a) per-virtualhost bandwidth limiting configuration
+
+Next, you may define virtualhosts bandwidth limits, URL locations and
+path to the scoreboard file for individual virtualhosts:
+
+# specify default 'bandwidth exceeded' location
+CBandDefaultExceededURL	http://haha.org/bandwidth_exceeded.html
+
+<VirtualHost *:80>
+    DocumentRoot /var/www/xyz.org/
+    ServerName xyz.org
+    CustomLog /var/log/apache2/xyz.org.access combined
+    ErrorLog /var/log/apache2/xyz.org.access.error
+    RewriteEngine On
+    RewriteOptions inherit
+
+    # 100MB virtualhost bandwidth limit
+    CBandLimit 100000
+
+    # redirect to http://abc.org/bandwidth_exceeded.html
+    # when the limit has been reached
+    CBandExceededURL http://abc.org/bandwidth_exceeded.html
+
+    # virtualhost's scoreboard file
+    CBandScoreboard /var/run/apache2/xyz.org.scoreboard
+    
+    # a period of time after which the scoreboard will be cleared (1 week) (only in >=0.9.5-rc2)
+    CBandPeriod 1W
+</VirtualHost>
+
+--------------------------------------------------------
+
+b) per-user bandwidth limiting configuration (only in >=0.9.1 versions)
+In >=0.9.1 versions you can define limits for users and assign virtualhosts to them
+
+# define user 'dembol'
+<CBandUser dembol>
+    # 200MB bandwidth limit for user 'dembol'
+    CBandUserLimit 200000
+
+    # redirect to http://abc.org/bandwidth_exceeded.html
+    # when the limit has been reached
+    CBandUserExceededURL http://abc.org/bandwidth_exceeded.html
+
+    # user's scoreboard file
+    CBandUserScoreboard /var/run/apache2/dembol.scoreboard
+    
+    # a period of time after which the scoreboard will be cleared (4 days) (only in >=0.9.5-rc2)
+    CBandUserPeriod 4D
+</CBandUser>
+
+# assign virtualhost 'xyz.org' to user 'dembol'
+<VirtualHost *:80>
+    ServerName xyz.org
+    # Specify virtualhost owner
+    CBandUser dembol
+    
+</VirtualHost>
+
+# assign virtualhost 'aga.org' to user 'dembol'
+<VirtualHost *:80>
+    ServerName aga.org
+    # Specify virtualhost owner
+    CBandUser dembol
+</VirtualHost>
+
+--------------------------------------------------------
+
+c) per-user and per-virtualhost bandwidth limiting configuration (only in >=0.9.1 versions)
+In >=0.9.1 versions you can also mix per-user and per-virtualhost bandwidth limiting techniques
+
+# define user 'dembol'
+<CBandUser dembol>
+    # 200MB bandwidth limit for user 'dembol'
+    CBandUserLimit 200000
+
+    # redirect to http://abc.org/bandwidth_exceeded.html
+    # when the limit has been reached
+    CBandUserExceededURL http://abc.org/bandwidth_exceeded.html
+
+    # user's scoreboard file
+    CBandUserScoreboard /var/run/apache2/dembol.scoreboard
+    
+    # a period of time after which the scoreboard will be cleared (2 minutes) (only in >=0.9.5-rc2)
+    CBandUserPeriod 2M
+</CBandUser>
+
+# assign virtualhost 'xyz.org' to user 'dembol'
+<VirtualHost *:80>
+    ServerName xyz.org
+    # Specify virtualhost owner
+    CBandUser dembol
+    
+    # 100MB virtualhost bandwidth limit
+    CBandLimit 100000
+
+    # redirect to http://abc.org/bandwidth_exceeded.html
+    # when the limit has been reached
+    CBandExceededURL http://abc.org/bandwidth_exceeded.html
+
+    # virtualhost's scoreboard file
+    CBandScoreboard /var/run/apache2/xyz.org.scoreboard
+    
+    # a period of time after which the scoreboard will be cleared (3 hours) (only in >=0.9.5-rc2)
+    CBandPeriod 3H
+</VirtualHost>
+
+# assign virtualhost 'aga.org' to user 'dembol'
+<VirtualHost *:80>
+    ServerName aga.org
+    # Specify virtualhost owner
+    CBandUser dembol
+</VirtualHost>
+
+d) per-destination bandwidth limiting configuration (only in >= 0.9.5-rc1 versions)
+In >= 0.9.5-rc1 you can limiting traffic to some destination classes. The destination classes 
+are defined by <CBandClass class_name> section. The limits for the classes are specified by 
+CBandClassLimit and CBandUserClassLimit commands
+
+# define 'class_1'
+<CBandClass class_1>
+    CBandClassDst 217.172.231.67
+    CBandClassDst 127/8
+    CBandClassDst 192.168.0.0/24
+    CBandClassDst 10.0.0.20
+</CBandClass>
+
+# define 'class_2'
+<CBandClass class_2>
+    CBandClassDst 192.168.100.100
+    CBandClassDst 153.19/16
+</CBandClass>
+
+<CBandUser dembol>
+    CBandUserLimit 1000000
+    CBandUserExceededURL http://edns.pl/bandwidth_exceeded.html
+    CBandUserScoreboard /home/dembol/write/user.dembol.scoreboard
+    
+    # 500MB limit for 'class_2'
+    CBandUserClassLimit class_2 500000
+</CBandUser>
+
+<VirtualHost *:80>
+    ...
+    CBandUser dembol
+    
+    # 1GB limit for 'class_1'
+    CBandClassLimit class_1 1000000
+    
+    # a period of time after which the scoreboard will be cleared (30 minutes) (only in >=0.9.5-rc2)
+    CBandPeriod 30M
+</VirtualHost>
+
+
+/cband-status handler
+=====================
+
+To view actual bandwidth limits, usages, users, scoreboards, add the
+following lines into the config file:
+
+<Location /cband-status>
+SetHandler cband-status
+</Location>
+
+Then you can access the status page with a URL like:
+http://server_name/cband-status
+
+In >=0.9.5-rc1 versions you can also view /cband-status handler in the XML format:
+http://server_name/cband-status?xml

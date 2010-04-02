@@ -1,0 +1,94 @@
+<IfModule mod_cband.c>
+    <Location /cband-status>
+    SetHandler cband-status
+    </Location>
+
+    CBandDefaultExceededURL http://www.google.com
+    CBandScoreFlushPeriod 100
+
+    <CBandClass class_1>
+	CBandClassDst 216.239.37.99
+        CBandClassDst 127/8
+	CBandClassDst 192.168.0.0/24
+        CBandClassDst 10.0.0.20
+    </CBandClass>
+
+    <CBandClass class_2>
+	CBandClassDst 192.168.100.100
+        CBandClassDst 153.19/16
+    </CBandClass>
+
+    <CBandClass class_3>
+	CBandClassDst 10.13/16
+    </CBandClass>
+
+    <CBandUser user1>
+	CBandUserLimit 100M
+        CBandUserExceededURL http://myserver.com/exu1.html
+	CBandUserScoreboard /var/run/apache2/scoreboards/user1.scoreboard
+	CBandUserPeriod 10W
+    </CBandUser>
+
+    <CBandUser user2>
+        CBandUserLimit 1000000 
+	CBandUserExceededURL http://myserver.com/exu2.html
+        CBandUserScoreboard /var/run/apache2/scoreboards/user2.scoreboard
+	CBandUserClassLimit class_1 50000
+	CBandUserPeriod 20H
+    </CBandUser>
+
+    <CBandUser user3>
+        CBandUserLimit 1G
+	CBandUserExceededURL http://myserver.com/exu3.html
+        CBandUserScoreboard /var/run/apache2/scoreboards/user3.scoreboard
+	CBandUserClassLimit class_2 3000K
+        CBandUserClassLimit class_3 100M
+	CBandUserPeriod 2H
+	CBandUserSpeed 512 10 10
+    </CBandUser>
+</IfModule>
+
+NameVirtualHost *:80
+
+<VirtualHost *:80>
+DocumentRoot /var/www2/html-vhost1
+ServerName vhost1.myserver.com
+<IfModule mod_cband.c>
+    CBandLimit 600M
+    CBandUser user1
+    CBandExceededURL http://myserver.com/ex1.html
+    CBandScoreboard /var/run/apache2/scoreboards/vhost1.scoreboard
+    CBandClassLimit class_1 1G
+    CBandPeriod 200S
+</IfModule>
+</VirtualHost>
+
+<VirtualHost *:80>
+DocumentRoot /var/www2/html-vhost2
+ServerName vhost2.myserver.com
+<IfModule mod_cband.c>
+    CBandUser user2
+    CBandLimit 900M
+    CBandExceededURL http://myserver.com/ex2.html
+    CBandScoreboard /var/run/apache2/scoreboards/vhost2.scoreboard
+    CBandClassLimit class_1 700M
+    CBandClassLimit class_2 100000
+    CBandClassLimit class_3 5000K
+    CBandPeriod 5D
+    CBandSpeed 1000 10 10
+</IfModule>
+</VirtualHost>
+
+<VirtualHost *:80>
+DocumentRoot /var/www2/html-vhost3
+ServerName vhost3.myserver.com
+<IfModule mod_cband.c>
+    CBandUser user3
+    CBandLimit 10G
+    CBandExceededURL http://myserver.com/ex3.htm
+    CBandScoreboard /var/run/apache2/scoreboards/vhost3.scoreboard
+    CBandClassLimit class_3 200M
+    CBandPeriod 1W
+    CBandSpeed 2000 10 10
+</IfModule>
+</VirtualHost>

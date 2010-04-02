@@ -1,0 +1,471 @@
+
+                 mod_cband - A per-user, per-virtualhost and per-destination bandwidth
+                             limiter for the Apache HTTP Server Version 2
+					     
+					     
+					     Documentation
+					     =============
+
+
+1. Units accepted in various directives:
+
+    * transfer speeds:
+          o kbps, Mbps, Gbps - multiples of "bits per second", respectively: 1024, 1024*1024 and 1024*1024*1024 bps
+          o kb/s, Mb/s, Gb/s - multiples of "bytes per second", respectively: 1024, 1024*1024 and 1024*1024*1024 b/s
+          o defaults to kbps 
+
+    * transfer quotas:
+          o K, M, G - multiples of bytes, respectively: 1000, 1000*1000 and 1000*1000*1000 bytes
+          o Ki, Mi, Gi - multiples of bytes, respectively: 1024, 1024*1024 and 1024*1024*1024 bytes
+          o defaults to K 
+
+    * time periods:
+          o S, M, H, D, W - multiples of seconds: Seconds, Minutes, Hours, Days, Weeks; respectively: 1, 60, 3600, 86400, 604800 seconds
+          o defaults to S 
+
+
+2. Directives
+
+Name		CBandDefaultExceededURL
+Description 	Default URL where mod_cband should redirect all requests to the virtualhost or 
+		user when the configured transfer limit is exceeded
+NOTE:		If you don't specify the exceeded URL location then standard 503 Service Unavailable 
+		will be sent
+Context 	Server config
+Syntax 		CBandDefaultExceededURL URL
+
+
+Name 		CBandDefaultExceededCode
+Description 	The http code sent to the user when the configured transfer is exceeded
+Context 	Server config
+Syntax 		CBandDefaultExceededCode HTTP_CODE
+Example 	CBandDefaultExceededCode 509
+
+
+Name 		CBandScoreFlushPeriod
+Description 	Specifies a period after which the score for the virtualhost or user is written to the scoreboard file. Use this to improve mod_cband's performance
+Default 	1
+Context 	Server config
+Syntax 		CBandScoreFlushPeriod number_of_requests
+Example 	CBandScoreFlushPeriod 100
+		Any virtualhost's or user's scoreboard will be saved after 100 requests
+
+
+Name 		CBandSpeed
+Description 	Specifies a maximal speed for a virtualhost
+Context 	<Virtualhost>
+Syntax 		CBandSpeed kbps rps max_conn
+		kbps - maximal transfer speed in [kMG]bps or [kMG]B/s
+		rps - maximal requests per second
+		max_conn - maximal number of simultaneous connections
+Example 	CBandSpeed 1024 10 30
+		Specifies maximal speed 1024kbps (1024 * 1024 bits per second), 
+		maximal 10 requests per second and with a maximum of 30 open connections
+NOTE:		This feature is available from version 0.9.6.0
+
+
+Name 		CBandRemoteSpeed
+Description 	Specifies maximal speed for any remote client
+Context 	<Virtualhost>
+Syntax 		CBandRemoteSpeed kbps rps max_conn
+		kbps - maximal transfer speed in [kMG]bps or [kMG]B/s
+		rps - maximal requests per second
+		max_conn - maximal number of simultaneous connections
+Example 	CBandRemoteSpeed 20kb/s 3 3
+		Specifies maximal speed 20kB/s (20 * 1024 bytes per second), 
+		maximal 3 requests per second and 3 open connections for any remote client
+NOTE:		This feature is available from version 0.9.6.1-rc2
+
+
+Name 		CBandClassRemoteSpeed
+Description 	Specifies maximal speed for any remote client from some destination class
+Context 	<Virtualhost>
+Syntax 		CBandClassRemoteSpeed class_name kbps rps
+		class_name - name of defined destination class
+		kbps - maximal transfer speed in kbps or kB/s
+		rps - maximal requests per second
+		max_conn - maximal number of simultaneous connections
+Example 	<CBandClass googlebot_class>
+		    CBandClassDst 66.249.64/24
+		    CBandClassDst 66.249.65/24
+		    CBandClassDst 66.249.79/24
+		</CBandClass>
+		CBandClassRemoteSpeed googlebot_class 20kb/s 2 3
+		
+		Specifies maximal speed 20kB/s (20 * 1024 bytes per second), 
+		maximal 2 requests per second and 3 open connections for any remote client from 
+		class googlebot_class
+NOTE:		This feature is available from version 0.9.6.1-rc2
+
+
+Name 		CBandRandomPulse
+Description 	Turns On or Off the random pulse generator for data sending
+		Random pulse generator is a part of the speed-limiting implementation of mod_cband. 
+		This directive changes the way a connection's speed is determined and enforced. 
+		The connections' speeds are measured within some time period and then provided for in 
+		that period. When r.p.g. is enabled this period is chosen randomly, 
+		providing for a statisticaly saner load distribution. Disabling this causes spikes both in 
+		bandwidth and cpu usages
+Context 	Global
+Syntax 		CBandRandomPulse On/Off
+
+
+Name 		CBandLimit
+Description 	Specifies bandwidth limit for virtualhost
+Context 	<Virtualhost>
+Syntax 		CBandLimit limit
+		limit - bandwidth quota size, available units: K (kilo), M (mega), G (giga), Ki (kibi), 
+		Mi (mebi), Gi (gibi)
+Example 	CBandLimit 10M
+		Specifies 10 * 1000 * 1000 bytes bandwidth quota
+
+		CBandLimit 10Mi
+		Specifies 10 * 1024 * 1024 bytes bandwidth quota
+
+
+Name 		CBandClassLimit
+Description 	Specifies bandwidth limit for virtualhost's destination class
+Context 	<Virtualhost>
+Syntax 		CBandClassLimit class_name limit
+		class_name - the name of defined class
+		limit - bandwidth quota size, available units: K (kilo), M (mega), G (giga), Ki (kibi), 
+		Mi (mebi), Gi (gibi)
+
+
+Name 		CBandExceededURL
+Description 	Specifies a URL where mod_cband should redirect all requests to a virtualhost when the configured transfer limit is exceeded NOTE: If you don't specify the exceeded URL location then standard 503 Service Unavailable will be sent
+Context 	<Virtualhost>
+Syntax 		CBandExceededURL URL
+
+
+Name 		CBandExceededSpeed
+Description 	Specifies maximal speed to which mod_cband slows down a virtualhost when the configured transfer limit is exceeded
+Context 	<Virtualhost>
+Syntax 		CBandExceededSpeed kbps rps max_conn
+		kbps - maximal transfer speed in kbps or kB/s
+		rps - maximal requests per second
+		max_conn - maximal number of simultaneous connections
+NOTE:		This feature is available from version 0.9.6.0
+
+
+Name 		CBandScoreboard
+Description 	Specifies virtualhost's scoreboard file
+Context 	<Virtualhost>
+Syntax 		CBandScoreboard path
+NOTE: 		The path must be writeable for the apache-user
+
+
+Name 		CBandPeriod
+Description 	Specifies a period after which a virtualhost's usages are cleared
+Context 	<Virtualhost>
+Syntax 		CBandPeriod period
+		period - available units: S (seconds), M (minutes), H (hours), D (days), W (weeks)
+Example 	CBandPeriod 1W
+		CBandPeriod 14D
+		CBandPeriod 60M
+		
+		
+Name 		CBandPeriodSlice
+Description 	Specifies the period slice length
+Default 	slice_len = limit
+Context 	<Virtualhost>
+Syntax 		CBandPeriodSlice slice_length
+Example 	CBandLimit 100G
+		CBandPeriod 4W
+		CBandPeriodSlice 1W
+		A period will be divided into 4 small slices (4W/1W = 4). Each slice has 100G/4=25G 
+		bandwidth limit. After 1W slice limit will be 50G, after 2W will be 75G ...
+
+
+Name 		<CBandUser>
+Description 	Define a new cband user
+Context 	Server config
+Syntax 		<CBandUser user_name>
+
+
+Name 		CBandUserSpeed
+Description 	Specifies maximal speed for a cband user
+Context 	<CBandUser>
+Syntax 		CBandUserSpeed kbps rps max_conn
+		kbps - maximal transfer speed in kbps or kB/s
+		rps - maximal requests per second
+		max_conn - maximal number of simultaneous connections
+Example 	CBandUserSpeed 100kb/s 10 5
+		Specifies maximal speed 100 kB/s (100 * 1024 bytes per second), 
+		maximal 10 requests per second and 5 open connections
+NOTE:		This feature is available from version 0.9.6.0
+
+
+Name 		CBandUserLimit
+Description 	Specifies bandwidth limit for a cband user
+Context 	<CBandUser>
+Syntax 		CBandUserLimit limit
+		limit - bandwidth quota size, available units: K (kilo), M (mega), G (giga), Ki (kibi), 
+		Mi (mebi), Gi (gibi)
+Example 	CBandUserLimit 10M
+		Specifies 10 * 1000 * 1000 bytes bandwidth quota
+
+		CBandUserLimit 10Mi
+		Specifies 10 * 1024 * 1024 bytes bandwidth quota
+
+
+Name 		CBandUserClassLimit
+Description 	Specifies bandwidth limit for a cband user's destination class
+Context 	<CBandUser>
+Syntax 		CBandUserClassLimit class_name limit
+		class_name - the name of defined class
+		limit - bandwidth quota size, available units: K (kilo), M (mega), G (giga), Ki (kibi), 
+		Mi (mebi), Gi (gibi)
+
+
+Name 		CBandUserExceededURL
+Description 	Specifies a URL where mod_cband should redirect all requests to user's virtualhost when the configured transfer limit is exceeded
+NOTE: If you don't specify the exceeded URL location then standard 503 Service Unavailable will be sent
+Context 	<CBandUser>
+Syntax 		CBandUserExceededURL URL
+
+
+Name 		CBandUserExceededSpeed
+Description 	Specifies maximal speed to which mod_cband slows down user when the configured transfer limit is exceeded
+NOTE: 		CBandUserExceededURL must not be used if you want to only slow down user's pages with 
+		CBandUserExceededSpeed directive
+Context 	<CBandUser>
+Syntax 		CBandUserExceededSpeed kbps rps max_conn
+		kbps - maximal transfer speed in kbps or kB/s
+		rps - maximal requests per second
+		max_conn - maximal number of simultaneous connections
+NOTE:		This feature is available from version 0.9.6.0
+
+
+Name 		CBandUserScoreboard
+Description 	Specifies a user's scoreboard file
+Context 	<CBandUser>
+Syntax 		CBandUserScoreboard path
+NOTE: 		The path must be writeable for the apache-user
+
+
+Name 		CBandUserPeriod
+Description 	Specifies a period after which a user's usages are cleared
+Context 	<CBandUser>
+Syntax 		CBandUserPeriod period
+		period - available units: S (seconds), M (minutes), H (hours), D (days), W (weeks)
+Example 	CBandUserPeriod 1W
+		CBandUserPeriod 14D
+		CBandUserPeriod 60M
+		
+		
+Name 		CBandUserPeriodSlice
+Description 	Specifies a period slice length
+Default 	slice_len = limit
+Context 	<CBandUser>
+Syntax 		CBandUserPeriodSlice slice_length
+Example 	CBandUserLimit 100G
+		CBandUserPeriod 4W
+		CBandUserPeriodSlice 1W
+		A period will be divided into 4 small slices (4W/1W = 4). Each slice has 100G/4=25G 
+		bandwidth limit. After 1W slice limit will be 50G, after 2W will be 75G ...
+
+
+3. Status Handler Configuration Example
+To view actual bandwidth limits, usages, users, scoreboards, add the following lines into the config file:
+
+<Location /cband-status> 
+SetHandler cband-status
+</Location> 
+
+<Location /cband-status-me> 
+SetHandler cband-status-me
+</Location> 
+
+Then you can access the status page with a URL like:
+http://server_name/cband-status
+http://server_name/cband-status-me
+
+An example of the cband-status is available here
+An example of the cband-status-me is available here
+
+In versions >=0.9.5-rc1 you can also view /cband-status handler in the XML format:
+
+http://server_name/cband-status?xml
+http://server_name/cband-status-me?xml
+
+An example of the cband-status in the XML format is available here
+An example of the cband-status-me in the XML format is available here
+
+
+4. Bandwidth Speed Configuration Example
+
+<VirtualHost *:80>
+    DocumentRoot /var/www/xyz.org/
+    ServerName xyz.org
+    CustomLog /var/log/apache2/xyz.org.access combined
+    ErrorLog /var/log/apache2/xyz.org.access.error
+    RewriteEngine On
+    RewriteOptions inherit
+
+    # Maximal 1024kbps speed for this virtualhost
+    # Maximal 10 requests per second for this virtualhost
+    # Maximal 30 open connections for this virtualhost
+    CBandSpeed 1024 10 30
+    
+    # Maximal 10kB/s speed, 3 requests/s and 2 open connections for any remote client
+    CBandRemoteSpeed 10kb/s 3 2
+    
+    # Maximal 20kB/s speed, 2 requests/s and 3 open connections for remote
+    # clients from class googlebot_class :P
+    CBandClassRemoteSpeed googlebot_class 20kb/s 2 3
+</VirtualHost>
+
+5. Bandwidth Quota Configuration Example
+per-virtualhost bandwidth limiting configuration
+Next, you may define virtualhost's bandwidth limits, URL location and the path to scoreboard files for individual virtualhosts:
+
+# specify default 'bandwidth exceeded' location
+CBandDefaultExceededURL	http://haha.org/bandwidth_exceeded.html
+
+<VirtualHost *:80>
+    DocumentRoot /var/www/xyz.org/
+    ServerName xyz.org
+    CustomLog /var/log/apache2/xyz.org.access combined
+    ErrorLog /var/log/apache2/xyz.org.access.error
+    RewriteEngine On
+    RewriteOptions inherit
+
+    # 100MB virtualhost bandwidth limit
+    CBandLimit 100000
+
+    # redirect to http://abc.org/bandwidth_exceeded.html
+    # when the limit has been reached
+    CBandExceededURL http://abc.org/bandwidth_exceeded.html
+
+    # virtualhost's scoreboard file
+    CBandScoreboard /var/run/apache2/xyz.org.scoreboard
+    
+    # a period of time after which the scoreboard will be cleared (30 minutes) 
+    # (only in >=0.9.5-rc2)
+    CBandPeriod 30M
+</VirtualHost>
+
+
+per-user bandwidth limiting configuration (only in versions >=0.9.1)
+In versions >=0.9.1 you can define limits for users and assign virtualhosts to them
+
+# define user 'dembol'
+<CBandUser dembol>
+    # 200MB bandwidth limit for user 'dembol'
+    CBandUserLimit 200000
+
+    # redirect to http://abc.org/bandwidth_exceeded.html
+    # when the limit has been reached
+    CBandUserExceededURL http://abc.org/bandwidth_exceeded.html
+
+    # user's scoreboard file
+    CBandUserScoreboard /var/run/apache2/dembol.scoreboard
+    
+    # a period of time after which the scoreboard will be cleared (5 weeks) 
+    # (only in >=0.9.5-rc2)
+    CBandUserPeriod 5W
+</CBandUser>
+
+# assign virtualhost 'xyz.org' to user 'dembol'
+<VirtualHost *:80>
+    ServerName xyz.org
+    # Specify virtualhost's owner
+    CBandUser dembol
+</VirtualHost>
+
+# assign virtualhost 'aga.org' to user 'dembol'
+<VirtualHost *:80>
+    ServerName aga.org
+    # Specify virtualhost's owner
+    CBandUser dembol
+</VirtualHost>
+
+
+per-user and per-virtualhost bandwidth limiting configuration (only in versions >=0.9.1)
+In versions >=0.9.1 you can also mix per-user and per-virtualhost bandwidth limiting techniques
+
+# define user 'dembol'
+<CBandUser dembol>
+    # 200MB bandwidth limit for user 'dembol'
+    CBandUserLimit 200000
+
+    # redirect to http://abc.org/bandwidth_exceeded.html
+    # when the limit has been reached
+    CBandUserExceededURL http://abc.org/bandwidth_exceeded.html
+
+    # user's scoreboard file
+    CBandUserScoreboard /var/run/apache2/dembol.scoreboard
+    
+    # a period of time after which the scoreboard will be cleared (4 days) 
+    # (only in >=0.9.5-rc2)
+    CBandUserPeriod 4D
+</CBandUser>
+
+# assign virtualhost 'xyz.org' to user 'dembol'
+<VirtualHost *:80>
+    ServerName xyz.org
+    # Specify virtualhost's owner
+    CBandUser dembol
+    
+    # 100MB virtualhost bandwidth limit
+    CBandLimit 100000
+
+    # redirect to http://abc.org/bandwidth_exceeded.html
+    # when the limit has been reached
+    CBandExceededURL http://abc.org/bandwidth_exceeded.html
+
+    # virtualhost's scoreboard file
+    CBandScoreboard /var/run/apache2/xyz.org.scoreboard
+    
+    # a period of time after which the scoreboard will be cleared (50 minutes) 
+    # (only in >=0.9.5-rc2)
+    CBandPeriod 50M
+</VirtualHost>
+
+# assign virtualhost 'aga.org' to user 'dembol'
+<VirtualHost *:80>
+    ServerName aga.org
+    # Specify virtualhost's owner
+    CBandUser dembol
+</VirtualHost>
+
+
+per-destination bandwidth limiting configuration (only in >=0.9.5-rc1 versions)
+In >= 0.9.5-rc1 you can limit traffic to some destination classes. The destination classes are defined by <CBandClass class_name> section. The limits for the classes are specified by CBandClassLimit and CBandUserClassLimit commands
+
+# define 'class_1'
+<CBandClass class_1>
+    CBandClassDst 217.172.231.67
+    CBandClassDst 127/8
+    CBandClassDst 192.168.0.0/24
+    CBandClassDst 10.0.0.20
+</CBandClass>
+
+# define 'class_2'
+<CBandClass class_2>
+    CBandClassDst 192.168.100.100
+    CBandClassDst 153.19/16
+</CBandClass>
+
+<CBandUser dembol>
+    CBandUserLimit 1000000
+    CBandUserExceededURL http://edns.pl/bandwidth_exceeded.html
+    CBandUserScoreboard /home/dembol/write/user.dembol.scoreboard
+    
+    # 500MB limit for 'class_2'
+    CBandUserClassLimit class_2 500000
+</CBandUser>
+
+<VirtualHost *:80>
+    ...
+    CBandUser dembol
+    
+    # 1GB limit for 'class_1'
+    CBandClassLimit class_1 1000000
+    
+    # a period of time after which the scoreboard will be cleared (120 seconds) 
+    # (only in >=0.9.5-rc2)
+    CBandPeriod 120S
+</VirtualHost>
+

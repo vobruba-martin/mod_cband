@@ -1,0 +1,127 @@
+
+                 mod_cband - A per-user, per-virtualhost and per-destination bandwidth
+                             limiter for the Apache HTTP Server Version 2
+					     
+					     
+					          FAQ
+					     =============
+					     
+
+1. Apache doesn't serve some vhosts !
+2. How do I give a common limit to two virtual hosts ?
+3. How do I limit bandwidth based on the IP address the request comes from ?
+4. My bandwidth is used up in a week ! Aieeee!!!
+5. What if I don't need your stinkin' bandwidth limiting and only want to throttle ?
+6. Can I slow down my pages rather than block them with 509 ? 
+
+--------------------------------------------------------------------------------------
+
+1. Apache doesn't serve some vhosts !
+You probably set the scoreboards to the same file. If you need to have a common limit for those vhosts, look below.
+
+--------------------------------------------------------------------------------------
+
+2. How do I give a common limit to two virtual hosts ?
+Create a username and bind both virtualhost with that username, like this:
+
+<CBandUser myUser>
+    # 100MiB limit, 10 week period
+    CBandUserLimit 100Mi
+    CBandUserPeriod 10W
+    # file for writing down the bandwidth usages
+    CBandUserScoreboard /somewhere/user.myUser.scoreboard
+</CBandUser>
+<VirtualHost firstvhost>
+    ...
+    CBandUser myUser
+</VirtualHost>
+<VirtualHost secondvhost>
+    ...
+    CBandUser myUser
+</VirtualHost>
+
+--------------------------------------------------------------------------------------
+
+3. How do I limit bandwidth based on the IP address the request comes from ?
+At the first, you should define a destination class (a set of IP addresses the request comes from) like this:
+
+<CBandClass myClass>
+    CBandClassDst IP1
+    CBandClassDst IP2/mask
+    CBandClassDst IP3
+    ....
+</CBandClass>
+
+Next, you can define a limit for this class:
+
+<VirtualHost>
+    ...
+    # 1GB limit, 4 week period
+    CBandClassLimit myClass 1G
+    CBandPeriod 4W
+</VirtualHost>
+
+--------------------------------------------------------------------------------------
+
+4. My bandwidth is used up in a week ! Aieeee!!!
+"This looks like a job for .... THE SLICER !"
+Seriously now, there's a feature called period slicing which allows you to gradually "give" bandwidth, instead of allowing it to be used all at once.
+You can divide your limit period into "slices", so that only the limit of one slice can be used until another slice period comes.
+Example:
+
+CBandLimit 100Mi
+CBandPeriod 4W
+CBandPeriodSlice 1W
+
+This will create four slices (eg: cut 4 weeks into 1 week long slices).
+During each slice the effective limit will be increased by 100MiB/4 = 25MiB.
+During the first week you will have an effective bandwidth limit of 25MiB.
+This will make sure you have bandwidth for the remaining three weeks :).
+
+When the second week comes you will have an effective limit of 50MiB, and so on.
+Finally, in the fourth week your effective limit will be equal to the full limit - 100MiB.
+
+This doesn't mean unused bandwidth from last week is lost ! If during the first week you use 1MiB, then during the second week you can use up to 49MiB.
+
+You can even slice the period into 1 day slices, so if a day's bandwidth gets used, you can be sure that your site will be up again in the morning :)
+
+--------------------------------------------------------------------------------------
+
+5. What if I don't need your stinkin' bandwidth limiting and only want to throttle ?
+Then go ahead - don't use bandwidth limiting directives and setup throttling.
+Example:
+
+<VirtualHost>
+    ...
+    
+    # limit speed of this vhost to 1Mbit/s, 10 request/s, 30 open connections
+    CBandSpeed 1Mbps 10 30
+
+    # in addition every remote host connecting to this vhost
+    # will be limited to 200kbit/s, 3 request/s, 3 open connections
+    CBandRemoteSpeed 200kbps 3 3
+    
+</VirtualHost>
+
+Note: You don't have to use both directives. You can limit remote hosts without imposing a limit on the vhost or you can limit the vhost without limiting remote hosts.
+
+--------------------------------------------------------------------------------------
+
+6. Can I slow down my pages rather than block them with 509 ?
+The CBandExceededSpeed does just that. When used inside a vhost block it makes mod_cband slow down connections instead of showing clients some defined "bandwidth exceeded" page.
+Example
+
+<VirtualHost>
+    ...
+    CBandLimit 100Mi
+
+    # this limit is for when the vhost is still below 100MiB usage:
+    # limit speed of this vhost to 1Mbit/s, 10 request/s, 30 open connections
+    CBandSpeed 1Mbps 10 30
+
+    # ... while this limit is for when the vhost is over below 100MiB usage:
+    # limit speed of this vhost to 32Kbit/s, 2 request/s, 5 open connections
+    CBandExceededSpeed 32kbps 2 5
+</VirtualHost>
+
+Note: You don't have to use both *Speed directives.

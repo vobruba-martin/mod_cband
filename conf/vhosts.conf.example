@@ -1,0 +1,103 @@
+
+<IfModule mod_cband.c>
+    <Location /cband-status>
+    SetHandler cband-status
+    </Location>
+
+    CBandDefaultExceededURL http://www.google.com
+
+    <CBandClass class_1>
+	CBandClassDst 217.172.231.67
+        CBandClassDst 127/8
+	CBandClassDst 192.168.0.0/24
+        CBandClassDst 10.0.0.20
+    </CBandClass>
+
+    <CBandClass class_2>
+	CBandClassDst 192.168.100.100
+        CBandClassDst 153.19/16
+    </CBandClass>
+
+    <CBandClass class_3>
+	CBandClassDst 10.13/16
+    </CBandClass>
+
+    <CBandUser dembol>
+	CBandUserLimit 100M
+        CBandUserExceededURL http://server_name.com/bandwidth_exceeded.html
+	CBandUserScoreboard /home/dembol/write/user.dembol.scoreboard
+	CBandUserPeriod 10W
+    </CBandUser>
+
+    <CBandUser dembolek>
+        CBandUserLimit 1000000 
+	CBandUserExceededURL http://server_name.com/bandwidth_exceeded.html
+        CBandUserScoreboard /home/dembol/write/user.dembolek.scoreboard
+	CBandUserClassLimit class_1 50000
+	CBandUserPeriod 20H
+    </CBandUser>
+
+    <CBandUser dembol.nasa.pl>
+        CBandUserLimit 1G
+	CBandUserExceededURL http://www.google.com
+        CBandUserScoreboard /home/dembol/write/user.dembol.nasa.pl.scoreboard
+	CBandUserClassLimit class_2 3000K
+        CBandUserClassLimit class_3 100M
+	CBandUserPeriod 2H
+    </CBandUser>
+</IfModule>
+
+NameVirtualHost *:80
+
+<VirtualHost *:80>
+DocumentRoot /home/dembol/public_html/dembol.nasa.pl/
+ServerName dembol.nasa.pl
+ServerAlias *.dembol.nasa.pl
+Setenv VLOG /home/dembol/public_html/logs/dembol.nasa.pl.access
+CustomLog /home/dembol/public_html/logs/dembol.nasa.pl.access combined
+ErrorLog /home/dembol/public_html/logs/dembol.nasa.pl.error
+<IfModule mod_cband.c>
+    CBandLimit 600M
+    CBandUser dembol.nasa.pl
+    CBandExceededURL http://edns.pl/bandwidth_exceeded.html
+    CBandScoreboard /home/dembol/write/dembol.nasa.pl.scoreboard
+    CBandClassLimit class_1 1G
+    CBandPeriod 200S
+</IfModule>
+</VirtualHost>
+
+<VirtualHost *:80>
+DocumentRoot /home/dembol/public_html/dembol.nasa.pl/
+ServerName dembol.eu.org
+ServerAlias *.dembol.eu.org
+Setenv VLOG /home/dembol/public_html/logs/dembol.eu.org.access
+CustomLog /home/dembol/public_html/logs/dembol.eu.org.access combined
+ErrorLog /home/dembol/public_html/logs/dembol.eu.org.error
+<IfModule mod_cband.c>
+    CBandUser dembolek
+    CBandLimit 900M
+    CBandExceededURL http://server_name.com/bandwidth_exceeded.html
+    CBandScoreboard /home/dembolek/write/dembol.eu.org.scoreboard
+    CBandClassLimit class_1 700M
+    CBandClassLimit class_2 100000
+    CBandClassLimit class_3 5000K
+    CBandPeriod 5D
+</IfModule>
+</VirtualHost>
+
+<VirtualHost *:80>
+DocumentRoot /home/dembol/public_html/dembol.nasa.pl/cvs_alias
+ServerName cvs.cband.linux.pl:80
+Setenv VLOG /home/dembol/public_html/logs/cvs.cband.linux.pl.access
+CustomLog /home/dembol/public_html/logs/cvs.cband.linux.pl.access combined
+ErrorLog /home/dembol/public_html/logs/cvs.cband.linux.pl.error
+<IfModule mod_cband.c>
+    CBandUser dembol
+    CBandLimit 10G
+    CBandExceededURL http://server_name.com/bandwidth_exceeded.html
+    CBandScoreboard /home/dembol/write/dembol.eu.org.scoreboard
+    CBandClassLimit class_3 200M
+    CBandPeriod 1W
+</IfModule>
+</VirtualHost>
+

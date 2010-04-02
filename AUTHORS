@@ -1,0 +1,22 @@
+
+Main developer:
+
+* Lukasz Dembinski <dembol@cband.linux.pl>
+  - main developer
+
+Other developers:
+
+* Sergey V. Beduev <shaman@interdon.net>
+  - per-destination bandwidth limiter
+
+* Kyle Poulter <kyle@unixowns.us>
+  - /cband-status handler with XML Output
+
+* J. Kendzorra <kenzo@kenzo.homelinux.org>
+  - bandwidth limit units
+ 
+* Adam Dawidowski <drake@oomkill.net>
+  - bandwidth limit units, stress tests
+
+* Arvind Srinivasan <arvind@madtux.org>
+  - fixed memory leak

@@ -1,0 +1,223 @@
+
+$Id: Changes,v 1.13 2006/05/28 18:58:52 dembol Exp $
+    	
+		 mod_cband - A per-user, per-virtualhost and per-destination bandwidth
+			    limiter for the Apache HTTP Server Version 2
+
+
+Changelog
+=========
+
+Version 0.9.7.5 (STABLE)
+------------------------
+13-11-2006 Lukasz Dembinski <dembol@cband.linux.pl>
+* FIXED BUG: "CBand leaks memory in scoreboard read/write. The apr_file_open() function used in the functions
+  that read and write the scoreboard files cause a memory leak since the file descriptors get allocated
+  in the config memory pool, which isn't freed until Apache shuts down or restarts"
+* FIXED BUG: "Swapped arguments in shmctl functions"
+* Added truncf workaround for Solaris
+* fixed HTML 4.0 Strict warnings
+
+Version 0.9.7.4 (STABLE)
+------------------------
+
+28-05-2006 Lukasz Dembinski <dembol@cband.linux.pl>
+* FIXED BUG: the module doesn't set normal speed after refresh period. The speed is still the same 
+  as it was set by CBandExceededSpeed and isn't set to the normal speed after refresh period
+  (thanks to Pawe³ Kustroñ <pawel.kustron@goin.pl>)
+* Fixed small bugs in documentation
+
+
+Version 0.9.7.3 (STABLE)
+------------------------
+
+19-04-2006 Arvind Srinivasan <arvind@madtux.org>
+* fixed memory leak
+* tests with high speed bandwidth and files over 3GB
+
+
+Version 0.9.7.2 (STABLE)
+------------------------
+
+02-02-2006 Lukasz Dembinski <dembol@cband.linux.pl>
+* Improved management of the list of remote hosts
+* Added FAQ to the package
+
+02-01-2006 Lukasz Dembinski <dembol@cband.linux.pl>
+* Added truncf definition for FreeBSD
+* FIXED BUG: segmentation fault when the cband-status is refreshing (sometimes)
+* Improved download speed aproximator
+* Added documentation to the package
+
+
+Version 0.9.7.1 (STABLE)
+------------------------
+
+28-01-2006 Lukasz Dembinski <dembol@cband.linux.pl>
+* Added thread safety functions for more stability
+* Many stress tests
+
+27-01-2006 Lukasz Dembinski <dembol@cband.linux.pl>
+* Added critical section in mod_cband_change_total_connections(), some races may occurs in 0.9.7.0
+
+
+Version 0.9.7.0 (STABLE)
+------------------------
+
+26-01-2006 Lukasz Dembinski <dembol@cband.linux.pl>
+* Added CBandDefaultExceededCode [HTTP_CODE] - http code sent to the user when the limit is exceeded, 
+  default is 503 HTTP_SERVICE_UNAVAILABLE
+
+25-01-2006 Lukasz Dembinski <dembol@cband.linux.pl>
+* More logs and checking functions
+
+24-01-2006 Lukasz Dembinski <dembol@cband.linux.pl>
+* Code cleanup, stabilization
+
+23-01-2006 Lukasz Dembinski <dembol@cband.linux.pl>
+* FIXED BUG: NaNs in the cband-status in some situations
+* Improved Requests-per-second speed limiter
+
+
+Version 0.9.6.1 (unstable)
+------------------------
+
+05-01-2006 - 20-01-2006 Lukasz Dembinski <dembol@cband.linux.pl>
+* !! Added NEW SPEED LIMITER based on my own algorithm named "Fairness Bandwidth Sharing" !!
+  - CBandSpeed [kbps][rps][max_conn]         - virtualhosts' speed limits
+  - CBandUserSpeed [kbps][rps][max_conn]     - users' speed limits
+  - CBandRemoteSpeed [kbps][rps][max_conn]   - remote users' speed limits based on remote IP
+  - CBandClassRemoteSpeed [class][kbps][rps][max_conn] - remote users' speed limits based on remote IP in destination class
+  - CBandRandomPulse On/Off                  - random pulses (250ms-1000ms) for data sending
+  - bandwidth and server load balancing
+* New section in the cband-status - "Remote Clients"
+* Code cleanups and many optimizations
+
+03-01-2006 Lukasz Dembinski <dembol@cband.linux.pl>
+* New shared memory manager
+
+25-12-2005 - 28.12.2005 Lukasz Dembinski <dembol@cband.linux.pl>
+* FIXED BUG: Floating Point Exception in some situations
+* Merging status of all virtualhosts held by particular user
+* Total number of vhosts, total data transfer at the end of the status table
+* fixed shared memory management
+* added period slices feature
+
+23-12-2005 Philip M. White <pmw@qnan.org>
+* mod_cband strict HTML patch
+
+
+Version 0.9.6.0 (unstable)
+------------------------
+
+06-12-2005 Lukasz Dembinski <dembol@cband.linux.pl>
+* added virtualhosts' and users' scores caching
+* code cleanup
+
+03-12-2005 Lukasz Dembinski <dembol@cband.linux.pl>
+* added virtualhosts' and users' speed limiter
+* added CBandSpeed, CBandExceededSpeed, CBandUserSpeed, CBandUserExceededSpeed commands
+* added optional slowing down pages when the bandwidth limit is exceeded
+
+03-12-2005 Adam Dawidowski <drake@oomkill.net>
+* added new units - kibi bytes, mebi bytes and gibi bytes
+
+27-11-2005 Lukasz Dembinski <dembol@cband.linux.pl>
+* added served_bytes logging in LogHandler
+* code cleanup
+
+
+Version 0.9.5.3 (unstable)
+------------------------
+
+03-11-2005 Lukasz Dembinski <dembol@cband.linux.pl>
+* FIXED BUG: When a user exceeds bandwidth he's unable to view the /cband-status-me
+* added human-readable limit's and usage's formats
+
+
+Version 0.9.5.2 (unstable)
+------------------------
+
+22-10-2005 Lukasz Dembinski <dembol@cband.linux.pl>
+* added /cband-status-me handler
+
+22-10-2005 J. Kendzorra <kenzo@kenzo.homelinux.org>
+* added limit units (K, M, G)
+
+
+Version 0.9.5.1 (unstable)
+------------------------
+
+13-10-2005 Lukasz Dembinski <dembol@cband.linux.pl>
+* fixed bug: counting double traffic in some cases
+* added cband-status handler refreshing
+
+
+Version 0.9.5 (unstable)
+------------------------
+
+08-10-2005 Lukasz Dembinski <dembol@cband.linux.pl>
+* added reset-links in the cband-status handler
+* added 'periodic reset' feature
+* added gradient colors
+
+07-10-2005 Lukasz Dembinski <dembol@cband.linux.pl>
+* added new <CBandClass> section and CBandClassLimit, CBandUserClassLimit commands
+* modified /cband-status handler, added XML output (Kyle Poulter <kyle@unixowns.us>)
+* added mod_cband_status_handler_HTML() and mod_cband_status_handler_XML() functions
+
+30-09-2005 Lukasz Dembinski <dembol@cband.linux.pl>
+* modified per-destination bandwidth limiter, added total user traffic
+* added mod_cband_check_limit() function
+* added mod_cband_status_handler_print_limit() function
+* modified /cband-status handler, the limits are printed by mod_cband_status_handler_print_limit()
+* modified mod_cband_request_handler(), added mod_cband_check_limit()
+
+28-09-2005 Lukasz Dembinski <dembol@cband.linux.pl>
+* Code cleanup
+* Added colors in /cband-status handler
+
+24-09-2005 Lukasz Dembinski <dembol@cband.linux.pl>
+* modified AUTHORS file
+
+24-09-2005 Sergey V. Beduev <shaman@interdon.net>
+* added per-destination bandwidth limiter
+* added libpatricia.copyright file
+* added printing limit/usage for destinations in /cband-status
+
+
+Version 0.9.4 (unstable)
+------------------------
+
+22-09-2005 Sergey V. Beduev <shaman@interdon.net>
+* Fixed bug: Segmentation fault without CBandUser section
+
+22-09-2005 Lukasz Dembinski <dembol@cband.linux.pl>
+* modified mod_cband_get_virtualhost_entry() - virtualhosts are identified by servername:port:defn_line_num
+* added /cband-status handler
+* added mod_cband_check_duplicate()
+
+
+Version 0.9.3 (unstable)
+------------------------
+
+20-09-2005 Lukasz Dembinski <dembol@cband.linux.pl>
+* Fixed bug: Problem with 'Port' directive in ServerName command
+* updated source package structure
+* added 'create' argument in mod_cband_get_virtualhost_entry()
+* added 'create' argument in mod_cband_get_user_entry()
+
+
+Version 0.9.2 (unstable)
+------------------------
+
+11-09-2005 Lukasz Dembinski <dembol@cband.linux.pl>
+* Fixed bug: Problem with updating virtualhosts' and users' scoreboard on SMP machines was fixed
+* deleted mod_cband_create_score() function
+* modified mod_cband_open_score(): added opening/creating scoreboard by one open() function
+
+12-09-2005 Lukasz Dembinski <dembol@cband.linux.pl>
+* modified mod_cband_user_section(): ap_walk_config() is called if mod_cband_get_user() return NULL
+* deleted mod_cband_set_score() function
+* added mod_cband_update_score() function
+* code cleanup
