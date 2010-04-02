@@ -7,6 +7,8 @@ What is this
 Changelog
 =========
 
+* 2010-04-03 xml output should be well-formed <maiha@wota.jp>
+    [old] <Virtualhosts><2ch.example.com> # element that starts with numeric is invalid
+    [new] <Virtualhosts><virtualhost><name>2ch.example.com</name>...
 * 2010-04-03 fixed compilation error about 'undefined symbol: truncf' <maiha@wota.jp>
 * 2010-04-03 created git repository from mod-cband-0.9.7.5.tgz <maiha@wota.jp>
-

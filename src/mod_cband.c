@@ -2362,7 +2362,8 @@ void mod_cband_status_print_virtualhost_XML_row(request_rec *r, mod_cband_virtua
     mod_cband_update_speed_lock(entry->shmem_data, 0, 0, -1);
     mod_cband_get_speed_lock(entry->shmem_data, &bps, &rps);
 	    
-    ap_rprintf(r, "\t\t<%s>\n", entry->virtual_name);
+    ap_rprintf(r, "\t\t<virtualhost>\n");
+    ap_rprintf(r, "\t\t\t<name>%s</name>\n", entry->virtual_name);
     ap_rprintf(r, "\t\t\t<port>%d</port>\n", entry->virtual_port);
     ap_rprintf(r, "\t\t\t<line>%d</line>\n", entry->virtual_defn_line);
     ap_rprintf(r, "\t\t\t<limits>\n");
@@ -2416,7 +2417,7 @@ void mod_cband_status_print_virtualhost_XML_row(request_rec *r, mod_cband_virtua
     else
     	ap_rprintf(r, "\t\t\t<limit_exceeded_URL>none</limit_exceeded_URL>\n");	
 
-    ap_rprintf(r, "\t\t</%s>\n", entry->virtual_name);
+    ap_rprintf(r, "\t\t</virtualhost>\n");
 }
 
 void mod_cband_status_print_user_XML_row(request_rec *r, mod_cband_user_config_entry *entry_user,
