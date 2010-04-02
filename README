@@ -7,5 +7,6 @@ What is this
 Changelog
 =========
 
+* 2010-04-03 fixed compilation error about 'undefined symbol: truncf' <maiha@wota.jp>
 * 2010-04-03 created git repository from mod-cband-0.9.7.5.tgz <maiha@wota.jp>
 

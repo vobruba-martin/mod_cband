@@ -21,7 +21,7 @@
 #
 
 APXS=@APXS@
-APXS_OPTS=-Wc,-Wall -Wc,-DDST_CLASS=@DST_CLASS@
+APXS_OPTS=-Wc,-Wall -Wc,-DDST_CLASS=@DST_CLASS@ -lm
 SRC=src/mod_cband.c
 OBJ=src/.libs/mod_cband.so
 
