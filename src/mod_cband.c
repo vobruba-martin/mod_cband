@@ -1330,8 +1330,12 @@ int mod_cband_get_dst(request_rec *r)
     p.bitlen = 32;
     p.ref_count = 0;
     p.family = AF_INET;
+#if (AP_SERVER_MAJORVERSION_NUMBER) >= 2 && (AP_SERVER_MINORVERSION_NUMBER) >= 4
     p.add.sin.s_addr = inet_addr(r->connection->client_ip);
-		      
+#else
+    p.add.sin.s_addr = inet_addr(r->connection->remote_ip);
+#endif
+	      
     node = patricia_search_best(config->tree, &p);
 				    
     if (node) {
@@ -1339,7 +1343,11 @@ int mod_cband_get_dst(request_rec *r)
 					            
         if (leaf) {
 #ifdef DEBUG
+#if (AP_SERVER_MAJORVERSION_NUMBER) >= 2 && (AP_SERVER_MINORVERSION_NUMBER) >= 4
             fprintf(stderr,"%s leaf %s\n",r->connection->client_ip,leaf);
+#else
+            fprintf(stderr,"%s leaf %s\n",r->connection->remote_ip,leaf);
+#endif
             fflush(stderr);
 #endif
 	    return atoi(leaf);
@@ -1359,10 +1367,17 @@ int mod_cband_get_remote_host(struct conn_rec *c, int create, mod_cband_virtualh
     if (entry == NULL)
 	return -1;
     
+#if (AP_SERVER_MAJORVERSION_NUMBER) >= 2 && (AP_SERVER_MINORVERSION_NUMBER) >= 4
     if (c->client_ip != NULL)
 	addr = inet_addr(c->client_ip);    
     else
 	addr = c->client_addr->sa.sin.sin_addr.s_addr;
+#else
+    if (c->remote_ip != NULL)
+	addr = inet_addr(c->remote_ip);    
+    else
+	addr = c->remote_addr->sa.sin.sin_addr.s_addr;
+#endif
 	
     time_now = apr_time_now();     
     hosts = config->remote_hosts.hosts;
