@@ -1917,7 +1917,7 @@ int mod_cband_get_real_speed(mod_cband_shmem_data *shmem_data, float *bps, float
 int mod_cband_update_speed(mod_cband_shmem_data *shmem_data, unsigned long bytes_served, int new_connection, int remote_idx)
 {
     unsigned long time_delta;
-    unsigned long time_last_request;
+    //unsigned long time_last_request;
     unsigned long time_now;
     unsigned long time_delta_real;
     
@@ -1927,7 +1927,7 @@ int mod_cband_update_speed(mod_cband_shmem_data *shmem_data, unsigned long bytes
     time_now          = apr_time_now();
     time_delta_real   = time_now - shmem_data->total_last_refresh;
     time_delta        = (time_now - shmem_data->total_last_refresh) / 1e6;
-    time_last_request = (time_now - shmem_data->total_last_time) / 1e6;
+    //time_last_request = (time_now - shmem_data->total_last_time) / 1e6;
     
     if (bytes_served > 0)
 	shmem_data->current_TX += bytes_served;
@@ -2976,7 +2976,7 @@ int mod_cband_check_connections_speed(mod_cband_virtualhost_config_entry *entry,
     float remote_rps;
     unsigned long max_remote_kbps, remote_curr_rps, remote_max_conn, remote_total_conn;
     int remote_idx;
-    unsigned long time_now;
+    //unsigned long time_now;
     int loops;
     int overlimit;
 
@@ -2989,7 +2989,7 @@ int mod_cband_check_connections_speed(mod_cband_virtualhost_config_entry *entry,
     virtualhost_rps        = 0;
     user_rps               = 0;
     remote_rps             = 0;
-    time_now               = apr_time_now();
+    //time_now               = apr_time_now();
 
     loops = 0;
     do {
