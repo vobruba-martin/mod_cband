@@ -1051,11 +1051,11 @@ char *mod_cband_create_traffic_size(apr_pool_t *p, unsigned long kb, char *unit,
     if (mult <= 0)
 	mult = 1000;
 
-    if ((unit != "" && unit[0] == 'G') || (unit == "" && kb >= mult*mult)) {
+    if ((strcmp(unit, "") && unit[0] == 'G') || (!strcmp(unit, "") && kb >= mult*mult)) {
 	dest_unit[0] = 'G';
 	v = (float)kb / (mult * mult);
     } else
-    if ((unit != "" && unit[0] == 'M') || (unit == "" && kb >= mult)) {
+    if ((strcmp(unit, "") && unit[0] == 'M') || (!strcmp(unit, "") && kb >= mult)) {
 	dest_unit[0] = 'M';
 	v = (float)kb / mult;
     } else {

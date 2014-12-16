@@ -8,6 +8,7 @@ Changelog
 =========
 
 * 2014-12-16 fixed compilation with Apache 2.4 (tested on 2.4.10)
+             fixed string comparisons
 * 2010-04-03 xml output should be well-formed <maiha@wota.jp>
     [old] <Virtualhosts><2ch.example.com> # element that starts with numeric is invalid
     [new] <Virtualhosts><virtualhost><name>2ch.example.com</name>...
