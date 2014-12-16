@@ -1330,7 +1330,7 @@ int mod_cband_get_dst(request_rec *r)
     p.bitlen = 32;
     p.ref_count = 0;
     p.family = AF_INET;
-    p.add.sin.s_addr = inet_addr(r->connection->remote_ip);
+    p.add.sin.s_addr = inet_addr(r->connection->client_ip);
 		      
     node = patricia_search_best(config->tree, &p);
 				    
@@ -1339,7 +1339,7 @@ int mod_cband_get_dst(request_rec *r)
 					            
         if (leaf) {
 #ifdef DEBUG
-            fprintf(stderr,"%s leaf %s\n",r->connection->remote_ip,leaf);
+            fprintf(stderr,"%s leaf %s\n",r->connection->client_ip,leaf);
             fflush(stderr);
 #endif
 	    return atoi(leaf);
@@ -1359,10 +1359,10 @@ int mod_cband_get_remote_host(struct conn_rec *c, int create, mod_cband_virtualh
     if (entry == NULL)
 	return -1;
     
-    if (c->remote_ip != NULL)
-	addr = inet_addr(c->remote_ip);    
+    if (c->client_ip != NULL)
+	addr = inet_addr(c->client_ip);    
     else
-	addr = c->remote_addr->sa.sin.sin_addr.s_addr;
+	addr = c->client_addr->sa.sin.sin_addr.s_addr;
 	
     time_now = apr_time_now();     
     hosts = config->remote_hosts.hosts;
